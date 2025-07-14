@@ -1,0 +1,659 @@
+---
+title: "Data Scientist A - Task 1: Merge Example Data"
+author: "Mikhaela Lewis"
+date: "2025-07-05"
+output: 
+  html_document:
+    theme: darkly
+    toc: true
+    toc_depth: 3
+---
+# Task 1: Merge Example Data
+
+
+## Setup
+
+
+### Setup Knitr
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Attach libraries
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+#library(purrr)
+```
+
+
+#### Save filepaths
+
+```{r}
+file1 <- '/Users/mikhaelalewis/Documents/ai4purpose-25/dsa/set1_20240101-20240530.xlsx'
+file2 <- '/Users/mikhaelalewis/Documents/ai4purpose-25/dsa/set2_20240701-20241231.xlsx'
+file3 <- '/Users/mikhaelalewis/Documents/ai4purpose-25/dsa/set3_20250101-20250528.xlsx'
+```
+
+
+#### Function to create a named list of dataframes for each sheet in an Excel file
+
+```{r}
+get_sheets <- function(file_name) {
+  # Get all sheet names
+  sheet_names <- readxl::excel_sheets(file_name)
+  
+  # Read each sheet into a named list of dataframes
+  sheet_list <- lapply(sheet_names, function(one_sheet) as.data.frame(readxl::read_excel(file_name, sheet = one_sheet)))
+  names(sheet_list) <- sheet_names
+  
+  return(sheet_list)
+}
+```
+
+
+#### Use functions on the 3 Excel files
+
+```{r}
+set1_dfs <- get_sheets(file1)
+set2_dfs <- get_sheets(file2)
+set3_dfs <- get_sheets(file3)
+```
+
+
+### Check loading
+
+```{r}
+# Ensure that each named list of dataframes has the same names
+names(set1_dfs)
+names(set2_dfs)
+names(set2_dfs)
+```
+
+
+### Ensure in tabular data are dataframes, not tibbles
+
+```{r}
+class(set1_dfs[["Heart Rate"]]) # df
+class(set2_dfs[["Heart Rate"]]) # df
+class(set3_dfs[["Heart Rate"]]) # df
+```
+
+
+## Cleaning: Column Names
+
+
+### Reset Code
+
+```{r}
+# For resetting df lists between test runs
+
+set1_dfs <- get_sheets(file1)
+set2_dfs <- get_sheets(file2)
+set3_dfs <- get_sheets(file3)
+```
+
+
+### Rename columns and convert data types where necessary
+
+
+#### 1. Heart Rate
+
+
+##### Create copies
+
+```{r}
+hr1 <- set1_dfs[["Heart Rate"]] # Unedited copy of Heart Rate df from Set 1
+hr1_test1 <- hr1 # copy for performing 1st test
+```
+
+
+##### Basic Logic
+
+The following basic logic works.
+
+```{r}
+# Rename then retype
+
+# Column names
+old <- c("Date", "Min", "Max", "Avg", "Median")
+new <- c("date", "hr_min", "hr_max", "hr_avg", "hr_med")
+
+hr1_test1 <- hr1_test1 %>% rename_with(~ new, all_of(old)) # Rename columns
+
+# Retyping columns -> all numeric except for date, which is a Date
+hr1_test1 <- hr1_test1 %>% 
+  mutate(
+    date = mdy(date),
+    across(new[- 1], as.numeric)
+  )
+
+# Check changes
+str(hr1_test1)
+```
+
+##### Combined Logic
+
+The combined logic works also.
+
+```{r}
+hr1_test2 <- hr1 # make copy for 2nd test
+
+# Rename and retype in one step
+
+# Column names
+old <- c("Date", "Min", "Max", "Avg", "Median")
+new <- c("date", "hr_min", "hr_max", "hr_avg", "hr_med")
+
+# Apply changes 
+hr1_test2 <- hr1_test2 %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    across(new[- 1], as.numeric)
+  )
+
+# Check changes
+str(hr1_test2)
+```
+
+##### Function
+
+```{r}
+reshape_hr <- function(df) {
+  # Column names
+  old <- c("Date", "Min", "Max", "Avg", "Median")
+  new <- c("date", "hr_min", "hr_max", "hr_avg", "hr_med")
+
+  # Rename and retype in one step
+  df <- df %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    across(new[- 1], as.numeric)
+  )
+  
+  return(df)
+}
+```
+
+
+##### Test on Set 1 Heart Rate data
+
+The function works on Set 1 Heart Rate data.
+
+```{r}
+hr1_test3 <- hr1 # make copy for 3rd test
+hr1_test3 <- reshape_hr(hr1_test3) # apply changes
+str(hr1_test3) # check changes
+```
+
+##### Test on Set 2 Heart Rate data
+
+The function works for Set 2 Heart Rate data.
+
+```{r}
+hr2 <- set2_dfs[["Heart Rate"]] # Unedited copy of Heart Rate df from Set 2
+hr2_test3 <- hr2 # make copy for test
+hr2_test3 <- reshape_hr(hr2_test3) # apply changes
+str(hr2_test3) # check changes
+```
+
+##### Test on Set 3 Heart Rate data
+
+The function works for Set 3 Heart Rate data.
+
+```{r}
+hr3 <- set3_dfs[["Heart Rate"]] # Unedited copy of Heart Rate df from Set 2
+hr3_test3 <- hr3 # make copy for test
+hr3_test3 <- reshape_hr(hr3_test3) # apply changes
+str(hr3_test3) # check changes
+```
+
+#### Rename and retype columns in Heart Rate data frames in original named lists
+
+```{r}
+# Apply chnages
+set1_dfs[["Heart Rate"]] <- reshape_hr(set1_dfs[["Heart Rate"]])
+set2_dfs[["Heart Rate"]] <- reshape_hr(set2_dfs[["Heart Rate"]])
+set3_dfs[["Heart Rate"]] <- reshape_hr(set3_dfs[["Heart Rate"]])
+
+# Check changes
+str(set1_dfs[["Heart Rate"]])
+str(set2_dfs[["Heart Rate"]])
+str(set3_dfs[["Heart Rate"]])
+```
+
+#### 2. Breathing Rate
+
+
+##### Create copies
+
+```{r}
+br1 <- set1_dfs[["Breathing Rate"]] # Unedited copy of Heart Rate df from Set 1
+br1_test1 <- br1 # copy for performing 1st test
+```
+
+
+##### Function
+
+```{r}
+reshape_br <- function(df) {
+  # Column names
+  old <- c("Date", "Min", "Max", "Avg", "Median")
+  new <- c("date", "br_min", "br_max", "br_avg", "br_med")
+
+  # Rename and retype in one step
+  df <- df %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    across(new[- 1], as.numeric)
+  )
+  
+  return(df)
+}
+```
+
+
+##### Rename and retype columns in Breathing Rate data frames in original named lists
+
+```{r}
+# Apply changes
+set1_dfs[["Breathing Rate"]] <- reshape_br(set1_dfs[["Breathing Rate"]])
+set2_dfs[["Breathing Rate"]] <- reshape_br(set2_dfs[["Breathing Rate"]])
+set3_dfs[["Breathing Rate"]] <- reshape_br(set3_dfs[["Breathing Rate"]])
+
+# Check changes
+str(set1_dfs[["Breathing Rate"]])
+str(set2_dfs[["Breathing Rate"]])
+str(set3_dfs[["Breathing Rate"]])
+```
+
+
+#### 3. Oxygen Level
+
+##### Function
+
+```{r}
+reshape_ox <- function(df) {
+  # Column names
+  old <- c("Date", "Min", "Max", "Avg", "Median")
+  new <- c("date", "ox_min", "ox_max", "ox_avg", "ox_med")
+
+  # Rename and retype in one step
+  df <- df %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    across(new[- 1], as.numeric)
+  )
+  
+  return(df)
+}
+```
+
+
+##### Rename and retype columns in Oxygen Level data frames in original named lists
+
+```{r}
+# Apply changes
+set1_dfs[["Oxygen Level"]] <- reshape_ox(set1_dfs[["Oxygen Level"]])
+set2_dfs[["Oxygen Level"]] <- reshape_ox(set2_dfs[["Oxygen Level"]])
+
+# Check changes
+str(set1_dfs[["Oxygen Level"]])
+str(set2_dfs[["Oxygen Level"]])
+```
+
+
+#### Sleep
+
+
+##### Function
+
+```{r}
+reshape_sleep <- function(df) {
+  # Column names
+  old <- c("Date", "Light", "Deep", "Rem", "Awake", "Total")
+  new <- c("date", "sleep_light", "sleep_deep", "sleep_rem", "sleep_awake", "sleep_total")
+
+  # Rename and retype in one step
+  df <- df %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    across(new[- 1], parse_number)
+  )
+  
+  return(df)
+}
+```
+
+
+##### Rename and retype columns in Sleep data frames in original named lists
+
+```{r}
+# Apply changes
+set1_dfs[["Sleep"]] <- reshape_sleep(set1_dfs[["Sleep"]])
+set2_dfs[["Sleep"]] <- reshape_sleep(set2_dfs[["Sleep"]])
+set3_dfs[["Sleep"]] <- reshape_sleep(set3_dfs[["Sleep"]])
+
+# Check changes
+str(set1_dfs[["Sleep"]])
+str(set2_dfs[["Sleep"]])
+str(set3_dfs[["Sleep"]])
+```
+
+
+#### Sleep Activities
+
+##### Function
+
+```{r}
+reshape_sleepact <- function(df) {
+  # Column names
+  old <- c("Date", "Description", "Is Important", "Time", "Created By")
+  new <- c("date", "sleepact_desc", "sleepact_imp", "sleepact_time", "sleepact_cb")
+
+  # Rename and retype in one step
+  df <- df %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    sleepact_imp = as.factor(sleepact_imp),
+    sleepact_time = parse_time(sleepact_time),
+    sleepact_cb = as.factor(sleepact_cb)
+  )
+  
+  return(df)
+}
+```
+
+
+##### Rename and retype columns in Sleep Activities data frames in original named lists
+
+```{r}
+# Apply changes
+set1_dfs[["Sleep Activities"]] <- reshape_sleepact(set1_dfs[["Sleep Activities"]])
+set2_dfs[["Sleep Activities"]] <- reshape_sleepact(set2_dfs[["Sleep Activities"]])
+set3_dfs[["Sleep Activities"]] <- reshape_sleepact(set3_dfs[["Sleep Activities"]])
+
+# Check changes
+str(set1_dfs[["Sleep Activities"]])
+str(set2_dfs[["Sleep Activities"]])
+str(set3_dfs[["Sleep Activities"]])
+```
+
+
+#### Activities
+
+##### Function
+
+```{r}
+reshape_act <- function(df) {
+  # Column names
+  old <- c("Date", "Description", "Is Important", "Time", "Category", "Created By")
+  new <- c("date", "act_desc", "act_imp", "act_time", "act_cat", "act_cb")
+
+  # Rename and retype in one step
+  df <- df %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    act_imp = as.factor(act_imp),
+    act_time = parse_time(act_time),
+    act_cat = as.factor(act_cat),
+    act_cb = as.factor(act_cb)
+  )
+  
+  return(df)
+}
+```
+
+
+##### Rename and retype columns in Activities data frames in original named lists
+
+```{r}
+# Apply changes
+set1_dfs[["Activities"]] <- reshape_act(set1_dfs[["Activities"]])
+set2_dfs[["Activities"]] <- reshape_act(set2_dfs[["Activities"]])
+set3_dfs[["Activities"]]  <- reshape_act(set3_dfs[["Activities"]])
+
+# Check changes
+str(set1_dfs[["Activities"]])
+str(set2_dfs[["Activities"]])
+str(set3_dfs[["Activities"]])
+```
+
+
+#### Observations
+
+##### Function
+
+```{r}
+reshape_obs <- function(df) {
+  # Column names
+  old <- c("Date", "Description", "Is Important", "Time", "Created By")
+  new <- c("date", "obs_desc", "obs_imp", "obs_time", "obs_cb")
+
+  # Rename and retype in one step
+  df <- df %>%
+  # Rename columns
+  rename_with(~ new, all_of(old)) %>%
+  # Retype columns
+  mutate(
+    date = mdy(date),
+    obs_imp = as.factor(obs_imp),
+    obs_time = parse_time(obs_time),
+    obs_cb = as.factor(obs_cb)
+  )
+  
+  return(df)
+}
+```
+
+
+##### Rename and retype columns in Observations data frames in original named lists
+
+```{r}
+# Apply changes
+set1_dfs[["Observations"]] <- reshape_obs(set1_dfs[["Observations"]])
+set2_dfs[["Observations"]] <- reshape_obs(set2_dfs[["Observations"]])
+set3_dfs[["Observations"]] <- reshape_obs(set3_dfs[["Observations"]])
+
+# Check changes
+str(set1_dfs[["Observations"]])
+str(set2_dfs[["Observations"]])
+str(set3_dfs[["Observations"]])
+```
+
+
+## Merging: Within Sets
+
+
+### Helper Function: join_dfs()
+
+Takes a named list of data frames and a numeric representing the set number of the list (a value from 1-3) and returns a data frame resulting from nested left joins of the data frames in the given list.
+
+```{r}
+join_dfs <- function(df_list, set_num) {
+  # Complete nest joins
+  all_joined <- df_list[["Heart Rate"]] %>%
+    left_join(df_list[["Sleep"]], by="date") %>%
+    left_join(df_list[["Sleep Activities"]], by="date") %>%
+    left_join(df_list[["Activities"]], by="date") %>%
+    left_join(df_list[["Breathing Rate"]], by="date") %>%
+    left_join(df_list[["Observations"]], by="date")
+  
+  # Add "Oxygen Level" for sets 1-2
+  if (set_num == 1 | set_num == 2) {
+    all_joined <- all_joined %>%
+      left_join(df_list[["Oxygen Level"]], by="date")
+  }
+  
+  return(all_joined)
+}
+```
+
+
+### Joining Set 1 Data
+
+```{r}
+set1_joined <- join_dfs(set1_dfs, 1) # Perform joins
+head(set1_joined) # Check first 6 rows of joined table
+tail(set1_joined) # Check last 6 rows of joined table
+```
+
+The join was successful, but there are multiple rows per date because one date can have multiple activity, observation, and/or sleep activity descriptions. At this point, the joined table can be kept in long format until we begin building the summarizer and report generator. Once that is underway, the data should be widened so that each row contains all of the descriptions for various activities etc. without a need to make multiple rows corresponding to a single date.
+
+
+### Joining Set 2 Data
+
+```{r}
+set2_joined <- join_dfs(set2_dfs, 2) # Perform joins
+head(set2_joined) # Check first 6 rows of joined table
+tail(set2_joined) # Check last 6 rows of joined table
+```
+
+
+### Joining Set 3 Data
+
+```{r}
+set3_joined <- join_dfs(set3_dfs, 3) # Perform joins
+
+# Add blank oxygen level columns 
+set3_joined$ox_min <- as.numeric(rep(NA, nrow(set3_joined)))
+set3_joined$ox_max <- as.numeric(rep(NA, nrow(set3_joined)))
+set3_joined$ox_avg <- as.numeric(rep(NA, nrow(set3_joined)))
+set3_joined$ox_med <- as.numeric(rep(NA, nrow(set3_joined)))
+
+head(set3_joined) # Check first 6 rows of joined table
+tail(set3_joined) # Check last 6 rows of joined table
+```
+
+
+## Merging: All Sets Together
+
+Since the joined data frames for each set 1-3 all have the same column names and data types, we can combine the data frames together using a row bind instead of joins.
+
+```{r}
+# Perform row bind
+all_joined <- bind_rows(set1_joined, set2_joined, set3_joined)
+
+head(all_joined) # Check first 6 rows of joined table
+tail(all_joined) # Check last 6 rows of joined table
+
+```
+
+## Cleaning: Filling/Flagging Missing Values
+
+Get column names and data types for check
+```{r}
+str(all_joined)
+```
+
+### Filling/Flagging Summary
+
+- The following columns contain data that is key for generating timeline-based summaries. As a result, missing values for these columns will be flagged and not imputed:
+  - *_time -> time that an event was logged
+  - *_desc -> description of the event
+  - *_imp -> whether the logging clinician marked the event as significant
+  - *_cb -> anonymized code for the logging clinician
+  
+- The following columns contain numeric vital data. Missing columns for these columns will be left as-is and filled only for visualization generation. Light impoutation may be applied for plotting.:
+  - *_min -> minimum
+  - *_max -> maximum
+  - *_avg -> average
+  - *_med -> median
+  - *_total -> total
+  
+- The following columns contain data on Patient X's sleep stages. Missing values for these columns will be flagged, and may be aggregated for creating summaries in the future:
+  - sleep_light -> hours of light sleep
+  - sleep_deep -> hours of deep sleep
+  - sleep_rem -> hours of REM sleep
+  - sleep_total -> total hours of sleep
+  
+- The following columns contain data on activities during the day/night that Patient X engaged in, or observations that a clinician made of them. Missing values for these columns will be flagged.
+  - act_desc -> description of an activity that Patient X engaged in
+  - act_cat -> category of an activity
+  - sleepact_desc -> description of a sleep-related event that occurred
+  - obs_desc -> description of an observation made by a clinician
+  
+### Missingness Flags
+
+```{r}
+#library(dplyr)
+
+# Mutate merge df with missingness flags
+all_joined <- all_joined %>%
+  mutate(
+    act_desc_missing  = is.na(act_desc),
+    act_imp_missing   = is.na(act_imp),
+    act_time_missing  = is.na(act_time),
+    sleep_desc_missing = is.na(sleepact_desc),
+    sleep_imp_missing  = is.na(sleepact_imp),
+    sleep_time_missing = is.na(sleepact_time),
+    obs_desc_missing  = is.na(obs_desc),
+    obs_imp_missing   = is.na(obs_imp),
+    obs_time_missing  = is.na(obs_time),
+    obs_cb_missing    = is.na(obs_cb)
+  )
+
+```
+
+
+
+```{r}
+# Check for missingness flags
+str(all_joined) # flags applied successfully
+```
+
+
+### Clean Key Fields (for LLM use)
+
+```{r}
+all_joined <- all_joined %>%
+  mutate(
+    act_imp_clean       = ifelse(is.na(act_imp), "Unknown", as.character(act_imp)),
+    sleepact_imp_clean = ifelse(is.na(sleepact_imp), "Unknown", as.character(sleepact_imp)),
+    obs_imp_clean       = ifelse(is.na(obs_imp), "Unknown", as.character(obs_imp)),
+    
+    act_desc_clean      = ifelse(is.na(act_desc), "No activity recorded", act_desc),
+    sleepact_desc_clean = ifelse(is.na(sleepact_desc), "No sleep-related activity recorded", sleepact_desc),
+    obs_desc_clean      = ifelse(is.na(obs_desc), "No observation was recorded", obs_desc)
+  )
+
+```
+
+
+```{r}
+# Check for replaced NA values with appropriate fillings
+str(all_joined)
+```
+
+
+## Export Merged/Cleaned Data
+
+```{r}
+saveRDS(all_joined, file = "clean_patient_x.rds")
+```
+
