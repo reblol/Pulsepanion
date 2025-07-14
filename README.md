@@ -4,18 +4,18 @@
 
 ---
 
-## 🚀 Features
+## Features
 
-- 📁 Upload patient CSV data
-- 📆 Select and filter by timeframe (Today, Last 7 Days, Last 30 Days, Custom)
-- 🔐 **De-identify** sensitive information
-- 🤖 Generate summaries using **LLMs (e.g., OpenAI GPT)**
-- 📄 Export summaries as formatted **PDF reports**
-- 📊 Visualize health metrics using interactive charts
+- Upload patient CSV data
+- Select and filter by timeframe (Today, Last 7 Days, Last 30 Days, Custom)
+- **De-identify** sensitive information
+- Generate summaries using **LLMs (e.g., OpenAI GPT)**
+- Export summaries as formatted **PDF reports**
+- Visualize health metrics using interactive charts
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: [R Shiny](https://shiny.posit.co/)
 - **Backend**: Python (via `reticulate`)
@@ -25,7 +25,7 @@
 
 ---
 
-## 👥 Team Contributions
+## Team Contributions
 
 **Kyle Shiroma (Team Lead)**  
 - Led project direction and coordinated team meetings  
@@ -43,5 +43,4 @@
    ```bash
    git clone https://github.com/yourusername/smart-summary.git
    cd smart-summary
-
 
