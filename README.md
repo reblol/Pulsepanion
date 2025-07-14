@@ -35,8 +35,6 @@
 - Connected backend to the R Shiny UI using `reticulate`  
 - Built the PDF export pipeline with `rmarkdown` and custom formatting
 
-_Other team members can be listed here with their specific roles if needed._
-
 ---
 
 ## 📂 How to Run Locally
