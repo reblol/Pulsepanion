@@ -30,13 +30,13 @@
 **Amine Ouaddi (Programmer)**  
 - Designed a user-friendly interface through use of R Shiny
 -  Designed and implemented backend scripts for:
-  - .csv file upload
-  - Data text summary generation
-  - Full Chart.js functionality through Interactive charts
-  - Real-time data processing and data validation
-  - Multi-session support for file uploads
-  - Memory Navigation
-  - Multilingual support
+    - .csv file upload
+    - Data text summary generation
+    - Full Chart.js functionality through Interactive charts
+    - Real-time data processing and data validation
+    - Multi-session support for file uploads
+    - Memory Navigation
+    - Multilingual support
 ---
 
 ## 📂 How to Run Locally
