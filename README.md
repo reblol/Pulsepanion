@@ -1,4 +1,4 @@
-# NCHacks-Pulsepanion
+# Pulsepanion
 
 **Smart Summary** is a web-based R Shiny dashboard that enables caregivers to upload patient data and automatically generate clean, human-readable health summaries across selected timeframes. Built using **R Shiny** for the UI and **Python** for backend processing, this tool supports streamlined healthcare communication through automated data analysis, de-identification, LLM-powered summarization, and export-ready PDF reports.
 
@@ -27,14 +27,16 @@
 
 ## Team Contributions
 
-**Kyle Shiroma (Team Lead)**  
-- Led project direction and coordinated team meetings  
-- Designed and implemented the backend Python script for:  
-  - De-identification of patient data  
-  - Integration with OpenAI’s LLM for summary generation  
-- Connected backend to the R Shiny UI using `reticulate`  
-- Built the PDF export pipeline with `rmarkdown` and custom formatting
-
+**Amine Ouaddi (Programmer)**  
+- Designed a user-friendly interface through use of R Shiny
+-  Designed and implemented backend scripts for:
+  - .csv file upload
+  - Data text summary generation
+  - Full Chart.js functionality through Interactive charts
+  - Real-time data processing and data validation
+  - Multi-session support for file uploads
+  - Memory Navigation
+  - Multilingual support
 ---
 
 ## 📂 How to Run Locally
